@@ -1,0 +1,20 @@
+doctrine:
+    dbal:
+        server_version: '8'
+        override_url: true
+        url: '%env(resolve:DATABASE_URL)%'
+        mapping_types:
+            enum: string
+        types:
+            uuid: Ramsey\Uuid\Doctrine\UuidType
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                type: annotation
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: 'App\Entity'
+                alias: App

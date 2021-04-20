@@ -1,0 +1,21 @@
+language: php
+php:
+  - '7.4'
+
+services:
+  - mysql
+
+install:
+  - composer install
+
+before_script:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
+
+env:
+  - DATABASE_URL="mysql://root:@127.0.0.1:3306/test?serverVersion=8"
+
+script:
+  - php bin/console doctrine:migrations:migrate --no-interaction
+  - composer lint
+  - composer phpstan
+  - composer phpunit

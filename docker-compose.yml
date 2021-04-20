@@ -1,0 +1,55 @@
+version: "3.4"
+
+services:
+###> doctrine/doctrine-bundle ###
+  database:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: lauralie
+      MYSQL_DATABASE: bookmarks
+      MYSQL_USER: lauralie
+      MYSQL_PASSWORD: lauralie
+    volumes:
+      - db-data:/var/lib/mysql:rw
+      - ./docker/database/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+      # - ./docker/database/data:/var/lib/mysql:rw
+###< doctrine/doctrine-bundle ###
+
+  php:
+    build:
+      context: .
+      target: symfony_php
+    depends_on:
+      - database
+    restart: unless-stopped
+    volumes:
+      - php_socket:/var/run/php
+    healthcheck:
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+  caddy:
+    build:
+      context: .
+      target: symfony_caddy
+    depends_on:
+      - php
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-localhost, caddy:80}
+    restart: unless-stopped
+    volumes:
+      - php_socket:/var/run/php
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  php_socket:
+  caddy_data:
+  caddy_config:
+###> doctrine/doctrine-bundle ###
+  db-data:
+###< doctrine/doctrine-bundle ###
